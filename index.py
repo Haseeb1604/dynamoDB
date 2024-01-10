@@ -15,14 +15,14 @@ class UserModel(Model):
     first_name = UnicodeAttribute()
     last_name = UnicodeAttribute()
 
-# if not UserModel.exists():
-#         UserModel.create_table(read_capacity_units=1, write_capacity_units=1, wait=True)
 
-# user_item = UserModel(email="haseeb@gmail.com", first_name="Muhammad", last_name="Haseeb")
+if not UserModel.exists():
+        UserModel.create_table(read_capacity_units=1, write_capacity_units=1, wait=True)
 
-# print(user_item)
+user_item = UserModel(email="haseeb@gmail.com", first_name="Muhammad", last_name="Haseeb")
 
-# user_item.save()
+user_item.save()
 
+print(UserModel)
 
-print(UserModel.exists())
+# print(UserModel.get("haseeb@gmail.com"))

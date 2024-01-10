@@ -2,12 +2,15 @@ from fastapi import FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from uuid import UUID
 
-from app.repositories import ProductRepository
-from app.schemas import ProductSchemaIn, ProductSchemaOut
+from app.tables import UserModel
+from app import schemas
 
 from .config import settings
 
 app = FastAPI()
+
+if not UserModel.exists():
+    UserModel.create_table(read_capacity_units=1, write_capacity_units=1, wait=True)
 
 origins = ["*"]
 
@@ -19,22 +22,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 @app.post(
-    "/v1/products",
+    "/users/",
     status_code=status.HTTP_201_CREATED,
-    response_model=ProductSchemaOut,
+    response_model=schemas.User,
 )
-def create_product(product_in: ProductSchemaIn) -> ProductSchemaOut:
-    product_out = ProductRepository.create(product_in)
-    return product_out
-
+def create(user: schemas.User):
+    user_create = UserModel.create(user)
+    print(user_create)
+    user_create.save()
+    return user_create
 
 @app.get(
-    "/v1/products/{product_id}",
-    status_code=status.HTTP_200_OK,
-    response_model=ProductSchemaOut,
+    "/users/",
+    # status_code=status.HTTP_201_CREATED,
+    # response_model=schemas.User,
 )
-def create_product(product_id: UUID) -> ProductSchemaOut:
-    product_out = ProductRepository.get(product_id)
-    return product_out
+def create():
+    users = UserModel.get()
+    print(users)
+    return users
+

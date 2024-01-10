@@ -1,43 +1,18 @@
-from pynamodb.attributes import NumberAttribute, UnicodeAttribute
-from pynamodb.indexes import AllProjection, GlobalSecondaryIndex
+import pynamodb
+from pynamodb.attributes import UnicodeAttribute, NumberAttribute
+from pynamodb.exceptions import DoesNotExist
 from pynamodb.models import Model
 
-from .config import settings
+from app.config import settings  
+from datetime import datetime
 
-
-class BaseTable(Model):
+class UserModel(Model):
     class Meta:
-        host = settings.DB_HOST if config.ENVIRONMENT in ["local", "test"] else None
-        region = settings.DB_REGION_NAME
+        table_name = 'user'
+        awd_region = settings.DB_REGION_NAME 
+        aws_access_key_id = settings.DB_ACCESS_KEY_ID
+        aws_secret_access_key = settings.DB_SECRET_ACCESS_KEY
 
-
-class ProductNameIndex(GlobalSecondaryIndex["ProductTable"]):
-    """
-    Represents a global secondary index for ProductTable
-    """
-
-    class Meta:
-        index_name = "product-name-index"
-        read_capacity_units = 10
-        write_capacity_units = 10
-        projection = AllProjection()
-
-    name = UnicodeAttribute(hash_key=True)
-    updated_at = NumberAttribute(range_key=True)
-
-
-class ProductTable(BaseTable):
-    """
-    Represents a DynamoDB table for a Product
-    """
-
-    class Meta(BaseTable.Meta):
-        table_name = "product-table"
-
-    id = UnicodeAttribute(hash_key=True)
-    name = UnicodeAttribute(null=False)
-    description = UnicodeAttribute(null=False)
-    created_at = NumberAttribute(null=False)
-    updated_at = NumberAttribute(null=False)
-
-    product_name_index = ProductNameIndex()
+    email = UnicodeAttribute(hash_key=True)
+    first_name = UnicodeAttribute()
+    last_name = UnicodeAttribute()
