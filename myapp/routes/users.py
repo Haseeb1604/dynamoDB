@@ -12,8 +12,8 @@ router = APIRouter(
 
 @router.post( "/", status_code=status.HTTP_201_CREATED, response_model=schema.User)
 def create(user: schema.User):
-  user_al =UserModel.email_index.query(user.email)
-  if any(user_al):
+  user_al = User.email_index.query(email, limit=1).next()
+  if user_al:
     raise HTTPException(
         status_code=status.HTTP_400_BAD_REQUEST, 
         detail="User with this email already exists"
