@@ -1,0 +1,44 @@
+def create_tables():
+    Book.create_table(wait=True)  # Create tables if they don't exist
+    User.create_table(wait=True)
+
+def add_user(user_id, name, email):
+    user = User(user_id=user_id, name=name, email=email)
+    user.save()
+
+def add_book(book_id, title, author, quantity=1):
+    book = Book(book_id=book_id, title=title, author=author, quantity=quantity)
+    book.save()
+
+def borrow_book(book_id, user_id):
+    with TransactWrite(connection=boto3.client('dynamodb')) as transaction:
+        transaction.update(
+            Book(book_id=book_id),
+            actions=[Book.quantity.add(-1), Book.borrowed_by.set(user_id)],
+            condition=(Book.quantity > 0) & (~Book.borrowed_by.contains(user_id))
+        )
+        transaction.update(
+            User(user_id=user_id),
+            actions=[User.books_borrowed.add(book_id)]
+        )
+
+def return_book(book_id, user_id):
+    with TransactWrite(connection=boto3.client('dynamodb')) as transaction:
+        transaction.update(
+            Book(book_id=book_id),
+            actions=[Book.quantity.add(1), Book.borrowed_by.set(None)],
+            condition=(Book.borrowed_by == user_id)
+        )
+        transaction.update(
+            User(user_id=user_id),
+            actions=[User.books_borrowed.remove(book_id)]
+        )
+
+# Example usage:
+create_tables()  # Ensure tables exist
+
+add_user("user1", "Alice", "alice@example.com")
+add_book("book1", "The Lord of the Rings", "J.R.R. Tolkien")
+
+borrow_book("book1", "user1")
+# ... Perform other operations as needed
